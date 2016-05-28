@@ -1,0 +1,10 @@
+glob:*.bak
+glob:*.dsk
+glob:*.exe
+glob:*.dbg
+glob:*.dep
+glob:*.mtd
+glob:*.loc
+glob:*.prn
+glob:*.tmp
+glob:~*.docx
