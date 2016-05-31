@@ -1,0 +1,167 @@
+Use cComWinsock.pkg
+
+Class cFitNesseRunnerWinsock is a cComWinsock
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property Handle phFitNesseRunner
+        Property Integer piPort Public 8091
+        Property String psIP "127.0.0.1"
+    End_Procedure
+    
+    {Visibility=Private}
+    Procedure OutputLine String sLine
+        Send OutputLine to (phFitNesseRunner(Self)) sLine
+    End_Procedure
+    
+    {Visibility=Private}
+    Procedure OutputLineDebug String sLine
+        #IFDEF C_FitNesse_Debug
+        Send OutputLine to (phFitNesseRunner(Self)) sLine
+        #ENDIF
+    End_Procedure
+    
+    {Visibility=Public}
+    Procedure Initialize
+        Integer iPort
+        Send OutputLineDebug "Initialize"
+        Variant vHost vPort
+        Send ComClose
+        Get psIP   to vHost
+        Get piPort to vPort
+        Set ComProtocol to OLEsckTCPProtocol
+        Set ComLocalPort to vPort
+        Send ComListen
+    End_Procedure
+  
+    {Visibility=Private}
+    Procedure DisplayStatus
+        Integer iState
+        String  sMsg
+        Get ComState to iState
+        Case Begin
+          Case (iState=OLEsckClosed)
+            Move "Closed" to sMsg
+            Case Break
+          Case (iState=OLEsckOpen)   Move "Open" to sMsg
+            Case Break
+          Case (iState=OLEsckListening) Move "Listening" to sMsg
+            Case Break
+          Case (iState=OLEsckConnectionPending) Move "Pending request" to sMsg
+            Case Break
+          Case (iState=OLEsckResolvingHost)     Move "Resolving remote hostname"  to sMsg
+            Case Break
+          Case (iState=OLEsckHostResolved)      Move "Resolved remote hostname" to sMsg
+            Case Break
+          Case (iState=OLEsckConnecting)        Move "Connecting.." to sMsg
+            Case Break
+          Case (iState=OLEsckConnected)         Move "Connected" to sMsg
+            Case Break
+          Case (iState=OLEsckClosing)           Move "Closing connection" to sMsg
+            Case Break
+          Case (iState=OLEsckError)             Move "Error" to sMsg
+            Case Break
+          Case Else
+            Move "Unknown" to sMsg
+        Case End
+        Send OutputLine ("Status: " + sMsg)
+    End_Procedure
+  
+    {Visibility=Private}
+    // Error occurred
+    Procedure OnComError Short llNumber Variant llDescription Integer llScode String llSource String llHelpFile Integer llHelpContext Variant llCancelDisplay
+        Send OutputLine ("Error" * String(llNumber) * String(llDescription) * String(llScode) * String(llSource))
+        Send DisplayStatus
+    End_Procedure
+    
+    {Visibility=Private}
+    // Occurs when the connection has been closed
+    Procedure OnComClose
+        Send OutputLineDebug "OnClose"
+        Forward Send OnComClose
+        Send DisplayStatus
+    End_Procedure
+    
+    {Visibility=Public}
+    Procedure CloseConnection
+        Send ComClose
+    End_Procedure
+    
+    {Visibility=Private}
+    Procedure ComListen
+        Send OutputLineDebug "Listen"
+        Forward Send ComListen
+        Send DisplayStatus
+    End_Procedure
+    
+    {Visibility=Private}
+    Procedure OnComDataArrival Integer iBytes
+        Send OutputLineDebug "OnDataArrival"
+        Forward Send OnComDataArrival iBytes
+        Variant vData
+        Integer iState
+        Move (Repeat(" ",iBytes)) to vData
+        Send ComGetData (&vData) Nothing Nothing
+        Send OutputLine ("Data received, " + String(iBytes) + " bytes")
+        String sData
+        Move vData to sData
+        Send OutputLineDebug sData
+        Send DisplayStatus
+        Send OnDataArrival to (phFitNesseRunner(Self)) sData
+        Get ComState to iState
+        If (iState=OLEsckClosing) Begin
+            Send ComClose 
+            Send ComListen          
+        End
+    End_Procedure
+  
+    {Visibility=Private}
+    // Occurs connect operation is completed
+    Procedure OnComConnect
+        Send OutputLineDebug "OnConnect"
+        Forward Send OnComConnect
+        Integer iPort
+        Get ComLocalPort to iPort
+        Send DisplayStatus
+    End_Procedure
+    
+    {Visibility=Public}
+    // Send data to remote computer
+    Procedure SendData Variant lldata
+        Send OutputLine ("Sending data," * String(Length(lldata)) * "bytes")
+        Send OutputLineDebug (String(lldata))
+        Send ComSendData lldata
+    End_Procedure
+    
+    {Visibility=Private}
+    // Occurs when a remote client is attempting to connect
+    Procedure OnComConnectionRequest Integer llrequestID
+        Send OutputLineDebug "OnConnectionRequest"
+        Forward Send OnComConnectionRequest llrequestID
+        String sRemoteHost sRemoteIP
+        Get ComRemoteHostIP to sRemoteIP
+        Get ComRemoteHost   to sRemoteHost 
+        Send ComClose
+        Send ComAccept llrequestID 
+        
+        Send OutputLine ("Accepting a connection from "+Trim(sRemoteHost)+" <"+Trim(sRemoteIP)+">")
+        Send DisplayStatus
+        
+        Variant vData
+        Get InitializeMessage of (phFitNesseRunner(Self)) to vData
+        Send ComSendData vData
+    End_Procedure
+    
+    {Visibility=Private}
+    // Occurs after a send operation has completed
+    Procedure OnComSendComplete
+        Send OutputLineDebug "OnSendComplete"
+        Forward Send OnComSendComplete
+        Integer iState
+        Get ComState to iState
+        If (iState=OLEsckClosing) Begin
+            Send ComClose 
+            Send ComListen          
+        End
+    End_Procedure
+
+End_Class

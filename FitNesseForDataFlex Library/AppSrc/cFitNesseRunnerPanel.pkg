@@ -1,0 +1,34 @@
+Use Windows.pkg
+Use Dfpanel.pkg
+Register_Procedure Activate_FitNesseRunner
+Register_Object FitNesseRunner
+Use cExitApplicationTimer.pkg
+
+Class cFitNesseRunnerPanel is a Panel
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property Handle phFitNesseRunner
+        Object oExitApplicationTimer is a cExitApplicationTimer
+        End_Object
+    End_Procedure
+    
+    Procedure End_Construct_Object
+        Forward Send End_Construct_Object
+        Handle hoClient
+        Get Client_Id to hoClient
+        Send Activate_FitNesseRunner of hoClient
+        Send Initialize to (phFitNesseRunner(Self))
+    End_Procedure
+    
+    Procedure AbortServer String sAbortMessage
+        Send AbortServer to (phFitNesseRunner(Self)) sAbortMessage
+    End_Procedure
+    
+    Procedure OutputLine String sLine
+        Send OutputLine to (phFitNesseRunner(Self)) sLine
+    End_Procedure
+    
+    Procedure ReadyToExitApplication
+        Send ReadyToExitApplication to oExitApplicationTimer
+    End_Procedure
+End_Class

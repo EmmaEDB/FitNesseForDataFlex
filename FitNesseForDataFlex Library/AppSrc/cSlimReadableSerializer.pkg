@@ -1,0 +1,54 @@
+Use cSlimList.pkg
+// Packs up a list into a serialized String using a readableformat.  The list items must be strings, or lists.
+// They will be recursively serialized.
+// <p/>
+// Format:  [..., ...]
+// All lists (including lists within lists) Begin with [ and End with ]. Items
+// are comma separated. Nested lists are indented. All lists start on a separate line.
+Class cSlimReadableSerializer is a cObject
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property String psResult
+        Property Handle phList
+    End_Procedure
+    
+    Procedure AppendString String s
+        Set psResult to (psResult(Self) + s + ",")
+    End_Procedure
+    
+    Function Serialize Handle hList Integer iIndentation Returns String
+        Integer i iIndent
+        If (num_arguments >= 2) Move iIndentation to iIndent
+        Set psResult to (Character(13) + Character(10) + Repeat(" ", iIndent) + "[")
+        String s sResult
+        Send IteratorReset to hList
+        While (IteratorMoveNext(hList))
+            Get MarshalObjectToString (CurrentArrayValue(hList)) iIndent to s
+            Send AppendString s
+        Loop
+        Get psResult to sResult
+        If (Right(sResult, 1) = ",") Move (Left(sResult, Length(sResult) - 1)) to sResult
+        If (Right(sResult, 1) = "]") Begin
+            Move (sResult + Character(13) + Character(10) + Repeat(" ", iIndent) + "]") to sResult
+        End
+        Else Begin
+            Move (sResult + "]") to sResult
+        End
+        Set psResult to sResult
+        Function_Return sResult
+    End_Function
+    
+    Function MarshalObjectToString Handle hObject Integer iIndentation Returns String
+        String s
+        If (hObject = 0) Move "null" to s
+        Else If (psInstanceType(hObject) = "String") Move (psString(hObject)) to s
+        Else If (psInstanceType(hObject) = "List") Begin
+            Object oSubSerializer is a cSlimReadableSerializer
+            End_Object
+            Get Serialize of oSubSerializer hObject (iIndentation + 1) to s
+            Send Destroy of oSubSerializer
+        End
+        Function_Return s
+    End_Function
+        
+End_Class

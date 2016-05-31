@@ -1,0 +1,139 @@
+Use cSlimList.pkg
+Use cIsNumericType.pkg
+// Uses Slim Serialization.  See SlimSerializer for details.  Will deserialize lists of lists recursively.
+
+Class cSlimDeserializer is a cObject
+    Procedure Construct_Object
+        Property Handle phDeserialized //is a cSlimList
+        Property Handle phResult
+        Property String psSerialized
+        Property Integer piIndex
+    End_Procedure
+    
+    Procedure SyntaxError String sMessage
+        String sMessage_
+        If (num_arguments >= 1) Move ("Syntax Error:" * sMessage) to sMessage_
+        Else Move "Syntax Error" to sMessage_
+        Error DFERR_PROGRAM sMessage_
+    End_Procedure
+    
+    Function CheckSerializedStringIsValid Returns Boolean
+        If (psSerialized(Self) = "") Begin
+            Send SyntaxError
+            Function_Return False
+        End
+        Else Function_Return True
+    End_Function
+    
+    Function ReadCharacters Integer iLength Returns String
+        String sSerialized
+        Get psSerialized to sSerialized
+        Function_Return (Mid(sSerialized, iLength, piIndex(Self)))
+    End_Function
+    
+    Procedure CheckForColon String sItemType
+        String sColonTerminator
+        Get GetChar to sColonTerminator
+        If (sColonTerminator <> ":") Begin
+            Send SyntaxError (sItemType + " in serialized list not terminated by colon.")
+        End
+    End_Procedure
+    
+    Function TryGetLength Returns Integer
+        Integer iLengthSize iLength
+        Move 6 to iLengthSize
+        String sLengthString
+        Get ReadCharacters iLengthSize to sLengthString
+        If (IsInteger(gcIsNumericType, sLengthString)) Move sLengthString to iLength
+        Else Send SyntaxError ("LengthString" * sLengthString * "not an integer")
+        Set piIndex to (piIndex(Self) + iLengthSize)
+        Send CheckForColon "Length"
+        Function_Return iLength
+    End_Function
+    
+    Function GetLength Returns Integer
+        Integer iRetVal
+        Get TryGetLength to iRetVal
+        Function_Return iRetVal
+    End_Function
+    
+    Function GetString Integer iLength Returns Integer
+        String sResult
+        Move (Mid(psSerialized(Self), iLength, piIndex(Self))) to sResult
+        Set piIndex to (piIndex(Self) + iLength)
+        Send CheckForColon "String"
+        Function_Return sResult
+    End_Function
+    
+    // @return the String parsed as a list If possible, null otherwise
+    Function MaybeReadList String sString Returns Handle
+        If ((Trim(sString) = "") or (Left(sString, 1) <> "[")) Function_Return 0
+        
+        Handle hSubList
+        Get Create (RefClass(cSlimDeserializer)) to hSubList
+        Get Deserialize of hSubList sString to hSubList
+        Function_Return hSubList
+    End_Function
+    
+    Procedure DeserializeItem
+        Integer iItemLength
+        Get GetLength to iItemLength
+        String sItem
+        Get GetString iItemLength to sItem
+        Handle hSublist
+        Get MaybeReadList sItem to hSublist
+        If (hSublist = 0) Send Add to (phResult(Self)) sItem
+        Else Send AddSubList to (phResult(Self)) hSublist
+    End_Procedure
+    
+    Function DeserializeList Returns Handle
+        Handle hResult
+        Get Create (RefClass(cSlimList)) to hResult
+        Set phResult to hResult
+        Integer iItemCount i
+        Get GetLength to iItemCount
+        For i from 0 to (iItemCount - 1)
+            Send DeserializeItem
+        Loop
+        Function_Return hResult
+    End_Function
+    
+    Function CharsLeft Returns Boolean
+        Function_Return (piIndex(Self) <= Length(psSerialized(Self)))
+    End_Function
+    
+    Function GetChar Returns String
+        String sChar
+        Move (Mid(psSerialized(Self), 1, piIndex(Self))) to sChar
+        Set piIndex to (piIndex(Self) + 1)
+        Function_Return sChar
+    End_Function
+        
+    Procedure CheckForClosedBracket
+        If (not(CharsLeft(Self)) or (GetChar(Self) <> "]")) Send SyntaxError "Serialized list has no ending ]"
+    End_Procedure
+        
+    Procedure CheckForOpenBracket
+        If (GetChar(Self) <> "[") Send SyntaxError "Serialized list has no starting ["
+    End_Procedure
+    
+    Function DeserializeString Returns Handle
+        Send CheckForOpenBracket
+        Handle hoResult
+        Get DeserializeList to hoResult
+        Send CheckForClosedBracket
+        Function_Return hoResult
+    End_Function
+    
+    Function Deserialize String sSerialized Returns Handle
+        Set psSerialized to sSerialized
+        Set piIndex to 1
+        If (CheckSerializedStringIsValid(Self)) Begin
+            Function_Return (DeserializeString(Self))
+        End
+        Else Begin
+            Send SyntaxError
+            Function_Return 0
+        End
+    End_Function
+End_Class

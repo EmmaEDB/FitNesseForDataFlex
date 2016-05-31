@@ -1,0 +1,394 @@
+// Visual DataFlex COM proxy classes generated from C:\Utvikling\ws\BRAVOPro\Programs\MSWINSCK.OCX
+Use FlexCom20.pkg
+
+
+// Protocol Constants
+Define OLEProtocolConstants for Integer
+    // TCP protocol
+    Define OLEsckTCPProtocol for 0
+    // UDP protocol
+    Define OLEsckUDPProtocol for 1
+
+// State Constants
+Define OLEStateConstants for Integer
+    // Socket is currently closed
+    Define OLEsckClosed for 0
+    // Socket is currently open
+    Define OLEsckOpen for 1
+    // Socket is listening for requests
+    Define OLEsckListening for 2
+    // Socket has a pending request
+    Define OLEsckConnectionPending for 3
+    // Socket is resolving remote computer name
+    Define OLEsckResolvingHost for 4
+    // Socket has resolved remote computer name
+    Define OLEsckHostResolved for 5
+    // Socket is connecting to remote computer
+    Define OLEsckConnecting for 6
+    // Socket has connected to remote computer
+    Define OLEsckConnected for 7
+    // Socket is closing connection to remote computer
+    Define OLEsckClosing for 8
+    // Socket has encountered an error
+    Define OLEsckError for 9
+
+// Error Constants
+Define OLEErrorConstants for Integer
+    // Invalid property value
+    Define OLEsckInvalidPropertyValue for 380
+    // Property is write-only
+    Define OLEsckGetNotSupported for 394
+    // Property is read-only
+    Define OLEsckSetNotSupported for 383
+    // Out of memory
+    Define OLEsckOutOfMemory for 7
+    // Wrong protocol or connection state for the requested transaction or request
+    Define OLEsckBadState for 40006
+    // The argument passed to a function was not in the correct format or in the specified range
+    Define OLEsckInvalidArg for 40014
+    // Successful
+    Define OLEsckSuccess for 40017
+    // Unsupported variant types
+    Define OLEsckUnsupported for 40018
+    // Invalid operation at current state
+    Define OLEsckInvalidOp for 40020
+    // Argument is out of range
+    Define OLEsckOutOfRange for 40021
+    // Wrong protocol for the requested transaction or request
+    Define OLEsckWrongProtocol for 40026
+    // The operation is canceled
+    Define OLEsckOpCanceled for 10004
+    // Invalid argument
+    Define OLEsckInvalidArgument for 10014
+    // Socket is non-blocking and the specified operation will block
+    Define OLEsckWouldBlock for 10035
+    // A blocking winsock operation is in progress
+    Define OLEsckInProgress for 10036
+    // The operation is completed. No blocking operation is in progress.
+    Define OLEsckAlreadyComplete for 10037
+    // The descriptor is not a socket
+    Define OLEsckNotSocket for 10038
+    // The datagram is too large to fit into the buffer and is truncated
+    Define OLEsckMsgTooBig for 10040
+    // The specified port is not supported
+    Define OLEsckPortNotSupported for 10043
+    // Address in use
+    Define OLEsckAddressInUse for 10048
+    // Address is not available from the local machine
+    Define OLEsckAddressNotAvailable for 10049
+    // Network subsystem failed
+    Define OLEsckNetworkSubsystemFailed for 10050
+    // The network cannot be reached from this host at this time
+    Define OLEsckNetworkUnreachable for 10051
+    // Connection has timed out when SO_KEEPALIVE is set
+    Define OLEsckNetReset for 10052
+    // Connection is aborted due to timeout or other failure
+    Define OLEsckConnectAborted for 10053
+    // The connection is reset by remote side
+    Define OLEsckConnectionReset for 10054
+    // No buffer space is available
+    Define OLEsckNoBufferSpace for 10055
+    // Socket is already connected
+    Define OLEsckAlreadyConnected for 10056
+    // Socket is not connected
+    Define OLEsckNotConnected for 10057
+    // Socket has been shut down
+    Define OLEsckSocketShutdown for 10058
+    // The attempt to connect timed out
+    Define OLEsckTimedout for 10060
+    // Connection is forcefully rejected
+    Define OLEsckConnectionRefused for 10061
+    // WinsockInit should be called first
+    Define OLEsckNotInitialized for 10093
+    // Authoritative answer: Host not found
+    Define OLEsckHostNotFound for 11001
+    // Non-Authoritative answer: Host not found
+    Define OLEsckHostNotFoundTryAgain for 11002
+    // Non-recoverable errors
+    Define OLEsckNonRecoverableError for 11003
+    // Valid name, no data record of requested type
+    Define OLEsckNoData for 11004
+
+// CLSID: {248DD892-BB45-11CF-9ABC-0080C7E7B78D}
+// Winsock methods and events
+Class cComIMSWinsockControl is a Mixin
+
+    // Returns/Sets the socket protocol
+    { MethodType=Property DesignTime=False }
+    Function ComProtocol Returns OLEProtocolConstants
+        Handle hDispatchDriver
+        OLEProtocolConstants retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 3 OLE_VT_I4 to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns/Sets the socket protocol
+    { MethodType=Property DesignTime=False }
+    Procedure Set ComProtocol OLEProtocolConstants value
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Set ComProperty of hDispatchDriver 3 OLE_VT_I4 to value
+    End_Procedure
+
+    // Returns the remote host IP address
+    { MethodType=Property DesignTime=False }
+    Function ComRemoteHostIP Returns String
+        Handle hDispatchDriver
+        String retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 4 OLE_VT_BSTR to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns the local machine name
+    { MethodType=Property DesignTime=False }
+    Function ComLocalHostName Returns String
+        Handle hDispatchDriver
+        String retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 5 OLE_VT_BSTR to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns the local machine IP address
+    { MethodType=Property DesignTime=False }
+    Function ComLocalIP Returns String
+        Handle hDispatchDriver
+        String retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 6 OLE_VT_BSTR to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns the socket handle
+    { MethodType=Property DesignTime=False }
+    Function ComSocketHandle Returns Integer
+        Handle hDispatchDriver
+        Integer retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 7 OLE_VT_I4 to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns/Sets the port to be connected to on the remote computer
+    { MethodType=Property DesignTime=False }
+    Function ComRemotePort Returns Integer
+        Handle hDispatchDriver
+        Integer retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 1 OLE_VT_I4 to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns/Sets the port to be connected to on the remote computer
+    { MethodType=Property DesignTime=False }
+    Procedure Set ComRemotePort Integer value
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Set ComProperty of hDispatchDriver 1 OLE_VT_I4 to value
+    End_Procedure
+
+    // Returns/Sets the port used on the local computer
+    { MethodType=Property DesignTime=False }
+    Function ComLocalPort Returns Integer
+        Handle hDispatchDriver
+        Integer retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 2 OLE_VT_I4 to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns/Sets the port used on the local computer
+    { MethodType=Property DesignTime=False }
+    Procedure Set ComLocalPort Integer value
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Set ComProperty of hDispatchDriver 2 OLE_VT_I4 to value
+    End_Procedure
+
+    // Returns the state of the socket connection
+    { MethodType=Property DesignTime=False }
+    Function ComState Returns Short
+        Handle hDispatchDriver
+        Short retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 8 OLE_VT_I2 to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns the number of bytes received on this connection
+    { MethodType=Property DesignTime=False }
+    Function ComBytesReceived Returns Integer
+        Handle hDispatchDriver
+        Integer retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 9 OLE_VT_I4 to retVal
+        Function_Return retVal
+    End_Function
+
+    // Connect to the remote computer
+    Procedure ComConnect Variant llRemoteHost Variant llRemotePort
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 2
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT llRemoteHost
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT llRemotePort
+        Send InvokeComMethod to hDispatchDriver 64 OLE_VT_VOID
+    End_Procedure
+
+    // Listen for incoming connection requests
+    Procedure ComListen
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send InvokeComMethod to hDispatchDriver 65 OLE_VT_VOID
+    End_Procedure
+
+    // Accept an incoming connection request
+    Procedure ComAccept Integer llrequestID
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Send DefineParam to hDispatchDriver OLE_VT_I4 llrequestID
+        Send InvokeComMethod to hDispatchDriver 66 OLE_VT_VOID
+    End_Procedure
+
+    // Send data to remote computer
+    Procedure ComSendData Variant lldata
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT lldata
+        Send InvokeComMethod to hDispatchDriver 67 OLE_VT_VOID
+    End_Procedure
+
+    // Retrieve data sent by the remote computer
+    Procedure ComGetData Variant lldata Variant lltype Variant llmaxLen
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 3
+        Send DefineParam to hDispatchDriver (OLE_VT_BYREF ior OLE_VT_VARIANT) lldata
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT lltype
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT llmaxLen
+        Send InvokeComMethod to hDispatchDriver 68 OLE_VT_VOID
+    End_Procedure
+
+    // Look at incoming data without removing it from the buffer
+    Procedure ComPeekData Variant lldata Variant lltype Variant llmaxLen
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 3
+        Send DefineParam to hDispatchDriver (OLE_VT_BYREF ior OLE_VT_VARIANT) lldata
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT lltype
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT llmaxLen
+        Send InvokeComMethod to hDispatchDriver 69 OLE_VT_VOID
+    End_Procedure
+
+    // Close current connection
+    Procedure ComClose
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send InvokeComMethod to hDispatchDriver 70 OLE_VT_VOID
+    End_Procedure
+
+    // Binds socket to specific port and adapter
+    Procedure ComBind Variant llLocalPort Variant llLocalIP
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 2
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT llLocalPort
+        Send DefineParam to hDispatchDriver OLE_VT_VARIANT llLocalIP
+        Send InvokeComMethod to hDispatchDriver 71 OLE_VT_VOID
+    End_Procedure
+
+    // Returns/Sets the name used to identify the remote computer
+    { MethodType=Property DesignTime=False }
+    Function ComRemoteHost Returns String
+        Handle hDispatchDriver
+        String retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 10 OLE_VT_BSTR to retVal
+        Function_Return retVal
+    End_Function
+
+    // Returns/Sets the name used to identify the remote computer
+    { MethodType=Property DesignTime=False }
+    Procedure Set ComRemoteHost String value
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Set ComProperty of hDispatchDriver 10 OLE_VT_BSTR to value
+    End_Procedure
+End_Class
+
+// CLSID: {248DD893-BB45-11CF-9ABC-0080C7E7B78D}
+// Microsoft Winsock Control events
+Class cComDMSWinsockControlEvents is a Mixin
+
+    // Error occurred
+    { MethodType=Event }
+    Procedure OnComError Short llNumber String ByRef llDescription Integer llScode String llSource String llHelpFile Integer llHelpContext Boolean ByRef llCancelDisplay
+    End_Procedure
+
+    // Occurs when data has been received from the remote computer
+    { MethodType=Event }
+    Procedure OnComDataArrival Integer llbytesTotal
+    End_Procedure
+
+    // Occurs connect operation is completed
+    { MethodType=Event }
+    Procedure OnComConnect
+    End_Procedure
+
+    // Occurs when a remote client is attempting to connect
+    { MethodType=Event }
+    Procedure OnComConnectionRequest Integer llrequestID
+    End_Procedure
+
+    // Occurs when the connection has been closed
+    { MethodType=Event }
+    Procedure OnComClose
+    End_Procedure
+
+    // Occurs during process of sending data
+    { MethodType=Event }
+    Procedure OnComSendProgress Integer llbytesSent Integer llbytesRemaining
+    End_Procedure
+
+    // Occurs after a send operation has completed
+    { MethodType=Event }
+    Procedure OnComSendComplete
+    End_Procedure
+
+    { Visibility=Private }
+    Procedure RegisterComEvents
+        Send RegisterComEvent 6 msg_OnComError
+        Send RegisterComEvent 0 msg_OnComDataArrival
+        Send RegisterComEvent 1 msg_OnComConnect
+        Send RegisterComEvent 2 msg_OnComConnectionRequest
+        Send RegisterComEvent 5 msg_OnComClose
+        Send RegisterComEvent 3 msg_OnComSendProgress
+        Send RegisterComEvent 4 msg_OnComSendComplete
+    End_Procedure
+End_Class
+
+// CoClass
+// ProgID: MSWinsock.Winsock.1
+// CLSID: {248DD896-BB45-11CF-9ABC-0080C7E7B78D}
+// Microsoft Winsock Control
+{ CLSID="{248DD896-BB45-11CF-9ABC-0080C7E7B78D}" }
+Class cComWinsock is a cComActiveXControl
+    Import_Class_Protocol cComIMSWinsockControl
+    Import_Class_Protocol cComDMSWinsockControlEvents
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set psProgID to "{248DD896-BB45-11CF-9ABC-0080C7E7B78D}"
+        Set psEventId to "{248DD893-BB45-11CF-9ABC-0080C7E7B78D}"
+        Set psLicenseKey to "2c49f800-c2dd-11cf-9ad6-0080c7e7b78d"
+        Set peAutoCreate to acAutoCreate
+    End_Procedure
+End_Class

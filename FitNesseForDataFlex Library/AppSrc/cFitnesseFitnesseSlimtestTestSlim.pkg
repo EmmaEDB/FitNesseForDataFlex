@@ -1,0 +1,9 @@
+Class cFitnesseFitnesseSlimtestTestSlim is a cObject
+    Function ThrowNormal Returns String
+        Function_Return "__EXCEPTION__:java.lang.Exception: This is my exception"
+    End_Function
+    
+    Function ThrowStopping Returns String
+        Function_Return "__EXCEPTION__:ABORT_SLIM_TEST:fitnesse.slim.test.TestSlim$StopTestException: This is a stop test exception"
+    End_Function
+End_Class

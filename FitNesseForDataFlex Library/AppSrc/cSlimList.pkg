@@ -1,0 +1,46 @@
+Use cArrayIteratorInteger.pkg
+
+Class cSlimListObject is a cObject
+    Procedure Construct_Object
+        Property String psString
+        Property String psInstanceType "String"
+    End_Procedure
+End_Class
+
+Class cSlimList is a cArrayIteratorInteger
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property String psString
+        Property String psInstanceType "List"
+    End_Procedure
+    
+    Procedure Add String sText
+        Handle[] ListObjects
+        Handle hListObject
+        Get Create (RefClass(cSlimListObject)) to hListObject
+        Set psString of hListObject to sText
+        Get RetrieveArray to ListObjects
+        Move hListObject to ListObjects[SizeOfArray(ListObjects)]
+        Send AttachArray ListObjects
+    End_Procedure
+    
+    Procedure AddNull
+        Handle[] ListObjects
+        Handle hListObject
+        Get RetrieveArray to ListObjects
+        Move 0 to ListObjects[SizeOfArray(ListObjects)]
+        Send AttachArray ListObjects
+    End_Procedure
+    
+    Procedure AddSubList Handle hSubList
+        Handle[] ListObjects
+        Get RetrieveArray to ListObjects
+        Move hSubList to ListObjects[SizeOfArray(ListObjects)]
+        Send AttachArray ListObjects
+    End_Procedure
+    
+    Procedure AddObject Handle hoResult
+        Send AddSubList hoResult
+    End_Procedure
+    
+End_Class

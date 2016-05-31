@@ -1,0 +1,53 @@
+Use cSeqOutputFile.pkg
+Use vWin32fh.pkg
+Use cTimeStamp.pkg
+Use cUniqueFileName.pkg
+
+Class cFitNesseRunnerLogFile is a cSeqOutputFile
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property Boolean pbLogFileOpen
+    End_Procedure
+    Function TimeStampNow Returns String
+        Object oTimeStamp is a cTimeStamp
+        End_Object
+        String sTimeStamp
+        Get TimeStampNow of oTimeStamp to sTimeStamp
+        Send Destroy of oTimeStamp
+        Function_Return sTimeStamp
+    End_Function
+    Function UniqueFileName String sFileName Returns String
+        Object oUniqueFileName is a cUniqueFileName
+        End_Object
+        String sUniqueFileName
+        Get UniqueFileName of oUniqueFileName sFileName to sUniqueFileName
+        Send Destroy of oUniqueFileName
+        Function_Return sUniqueFileName
+    End_Function
+    Procedure CreateLogFile
+        String sPath sFileName
+        Integer iRetVal
+        Boolean bOK
+        Get psHome of (phoWorkspace(ghoApplication)) to sPath
+        Move (vFolderFormat(sPath) + "FitnesseLog") to sPath
+        If (not(vFolderExists(sPath))) Begin
+            Move (vshCreateDirectoryEX(sPath)) to iRetVal
+            If (iRetVal = 1) Begin
+                Error DFERR_SETUP ("Kan ikke opprette katalog" * sPath)
+                Abort
+            End
+        End
+        Move (vFolderFormat(sPath) + "DataFlexFitNesseRunner_" + TimeStampNow(Self) + ".txt") to sFileName
+        Get UniqueFileName sFileName to sFileName
+        Get OpenOutput sFileName to bOK
+        Set pbLogFileOpen to bOK
+    End_Procedure
+    Procedure WriteLine String sLine
+        Boolean bOK
+        If (not(pbLogFileOpen(Self))) Send CreateLogFile
+        Get WriteLine sLine to bOK
+    End_Procedure
+    Procedure OutputLine String sLine
+        Send WriteLine sLine
+    End_Procedure
+End_Class

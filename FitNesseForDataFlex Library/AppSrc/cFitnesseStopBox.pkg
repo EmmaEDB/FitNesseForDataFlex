@@ -1,0 +1,8 @@
+Use Msgbox.pkg
+
+Class cFitnesseStopBox is a cObject
+    Function Stop Returns String
+        Send Stop_Box "Stop"
+        Function_Return "true"
+    End_Function
+End_Class

@@ -1,0 +1,146 @@
+Use cApplication.pkg
+Use cFitNesseRunnerLogFile.pkg
+Use cFitNesseServer.pkg
+Register_Procedure OutputLine String sLine
+
+Class cFitNesseRunnerApplication is a cApplication
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set psAutoOpenWorkspace to ""
+        Property Handle phMain
+        Property Handle phFitNesseServer
+        Property Handle phSocket
+        Property Handle phFitNesseRunnerView
+        Property Handle phLogFile
+        Property String psWorkspace
+        Property String psClassPath
+        Property Integer piPort
+        Object oLogFile is a cFitNesseRunnerLogFile
+        End_Object
+        Set phLogFile to oLogFile
+        Object oFitNesseServer is a cFitNesseServer
+        End_Object
+        Set phFitNesseRunner of oFitNesseServer to Self
+        Set phFitNesseServer to oFitNesseServer
+    End_Procedure
+    Procedure End_Construct_Object
+        Forward Send End_Construct_Object
+    End_Procedure
+    
+    Procedure ReadParameters
+        Handle hoCmdLine
+        Integer iNumArgs iArg
+        Get phoCommandLine to hoCmdLine
+        Get CountOfArgs of hoCmdLine to iNumArgs
+        Integer iPortNumber
+        String sClassPath sWorkspace
+        Send OutputLine to (phMain(Self)) ('Number of command-line arguments=' + String(iNumArgs))
+        For iArg from 1 to iNumArgs
+            Send OutputLine to (phMain(Self)) ('Arg ' + String(iArg) + ' :' + String(Argument(hoCmdLine, iArg)))
+        Loop
+        #IFDEF C_FitNesse_Debug
+        Send Info_Box "Debugging"
+        #ENDIF
+        #IFDEF C_FitNesse_ClassPath
+        Set psClassPath to C_FitNesse_ClassPath
+        #ENDIF
+        If (iNumArgs >= 4) Begin
+            Get Argument of hoCmdLine 4 to iPortNumber
+            Get Argument of hoCmdLine 2 to sWorkspace
+            Get Argument of hoCmdLine 3 to sClassPath
+            Set piPort to iPortNumber
+            Set psWorkspace to sWorkspace
+            Set psClassPath to sClassPath
+        End
+    End_Procedure
+    
+    Procedure ClientAreaInitialize
+        Send ReadParameters
+        Send InitWorkspace
+    End_Procedure
+    
+    Procedure OpenTheWorkspace String sWorkspace
+        Handle hoWorkspace
+        Integer eOpened
+        Get phoWorkspace to hoWorkspace
+        Get OpenWorkspaceFile of hoWorkspace sWorkspace to eOpened
+        If (eOpened = wsWorkspaceFileNotFound) Begin
+            If (IsRegistered(hoWorkspace, sWorkspace) =True) Begin
+                Get OpenWorkspace of hoWorkspace sWorkspace to eOpened
+            End
+        End
+        If (eOpened <> wsWorkspaceOpened) Begin
+            String sAbortMessage
+            Move ("Could not open workspace file" * sWorkspace) to sAbortMessage
+            Send AbortServer sAbortMessage
+            Send AbortNow sAbortMessage //Exiting here; nothing else to do without a workspace...
+        End
+    End_Procedure
+    
+    Procedure InitWorkspace
+        If (psWorkspace(Self) <> "") Send OpenTheWorkspace (psWorkspace(Self))
+        Else Send Info_Box "No workspace has been specified.\nStart the program from FitNesse.\nCheck the docs for further info."
+    End_Procedure
+    
+    Procedure PostInitialize
+        Set piPort of (phSocket(Self)) to (piPort(Self))
+        Set psClassPath of (phFitNesseServer(Self)) to (psClassPath(Self))
+    End_Procedure
+    
+    Procedure Initialize
+        Send PostInitialize
+    End_Procedure
+    
+    Procedure Start
+        Send Initialize to (phFitNesseServer(Self))
+        Send Initialize to (phSocket(Self))
+    End_Procedure
+    
+    Function InitializeMessage Returns String
+        Function_Return (InitializeMessage(phFitNesseServer(Self)))
+    End_Function
+    
+    Procedure OnDataArrival String sData
+        Send OnDataArrival to (phFitNesseServer(Self)) sData
+    End_Procedure
+    
+    Procedure AbortNow String sAbortMessage
+        #IFDEF C_FitNesse_Debug
+        Send Info_Box sAbortMessage
+        #ENDIF
+        Abort
+    End_Procedure
+    
+    Procedure AbortServer String sAbortMessage
+        If (phFitNesseServer(Self)) Begin
+            Send AbortServer to (phFitNesseServer(Self)) sAbortMessage
+        End
+        Else Begin
+            Send AbortNow sAbortMessage
+        End
+    End_Procedure
+    
+    Procedure ReadyToExitApplication
+        Send ReadyToExitApplication to (phMain(Self))
+    End_Procedure
+    
+    Procedure FinishSession
+        Send CloseFile to (phLogFile(Self))
+        Send ReadyToExitApplication
+    End_Procedure
+    
+    Procedure OutputLine String sLine
+        Send OutputLine to (phLogFile(Self)) sLine
+        If (phFitNesseRunnerView(Self)) Begin
+            Send DisplayLine to (phFitNesseRunnerView(Self)) sLine
+        End
+    End_Procedure
+    
+    Procedure SendData String sData
+        Send SendData to (phSocket(Self)) sData
+    End_Procedure
+    
+    Procedure CloseConnection
+        Send CloseConnection to (phSocket(Self))
+    End_Procedure
+End_Class

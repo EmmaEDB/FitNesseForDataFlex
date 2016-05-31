@@ -1,0 +1,24 @@
+//Use cFitnesseStopBox.pkg
+//Use cFitnesseFitnesseSlimtestTestSlim.pkg
+Use gFormatNumbers.pkg
+
+Class cFitnesse_Number_Mixin is a Mixin
+    Function NumberConvert Number nNumber Returns String
+        Function_Return (FormatNumber(nNumber, 4))
+    End_Function
+End_Class
+
+Class cFitnesseDivision is a cObject
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        
+        Property Number Numerator
+        Property Number Denominator
+    End_Procedure
+    
+    Import_Class_Protocol cFitnesse_Number_Mixin
+    
+    Function Quotient Returns Number
+        Function_Return (NumberConvert(Self, Numerator(Self)/Denominator(Self)))
+    End_Function
+End_Class

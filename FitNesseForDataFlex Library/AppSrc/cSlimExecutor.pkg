@@ -1,0 +1,207 @@
+Use cSlimList.pkg
+
+Class cSlimExecutor is a cObject
+    Procedure Construct_Object
+        Property Boolean pbStopHasBeenRequested
+        Property Handle phFitNesseServer
+        Property Handle[] phInstances
+        Property String[] psInstances
+        Property Integer piCurrentRow
+    End_Procedure
+    
+    Function MalformedInstructionText Returns String
+        Function_Return "__EXCEPTION__:message:<<MALFORMED_INSTRUCTION>>"
+    End_Function
+    
+    Function NoClassText String sClass Returns String
+        Function_Return ("__EXCEPTION__:message:<<NO_CLASS " + sClass + ">>")
+    End_Function
+    
+    Function NoMethodInClassText String sMethodName Returns String
+        Function_Return ("__EXCEPTION__:message:<<NO_METHOD_IN_CLASS " + sMethodName + ">>")
+    End_Function
+    
+    Function ErrorResultObject String sMessage Returns Handle
+        Handle hResult
+        Get Create (RefClass(cSlimListObject)) to hResult
+        If (num_arguments >= 1) Set psString of hResult to sMessage
+        Else Set psString of hResult to "__EXCEPTION__:message:<<NO_CLASS>>"
+        Function_Return hResult
+    End_Function
+    
+    Function ExecuteImport Handle hStatement Returns String
+        Function_Return "OK"
+    End_Function
+    
+    Procedure AddInstance Handle hInstance String sInstance
+        Handle[] hInstances
+        String[] sInstances
+        Get phInstances to hInstances
+        Get psInstances to sInstances
+        Move hInstance to hInstances[SizeOfArray(hInstances)]
+        Move sInstance to sInstances[SizeOfArray(sInstances)]
+        Set phInstances to hInstances
+        Set psInstances to sInstances
+    End_Procedure
+    
+    Function FindInstance String sInstance Returns Handle
+        Handle[] hInstances
+        String[] sInstances
+        Get phInstances to hInstances
+        Get psInstances to sInstances
+        Integer iIndex
+        Move (SearchArray(sInstance, sInstances)) to iIndex
+        If (iIndex <> -1) Function_Return hInstances[iIndex]
+        Else Function_Return 0
+    End_Function
+    
+    Procedure ResetInstances
+        Handle[] hInstances
+        String[] sInstances
+        Set phInstances to hInstances
+        Set psInstances to sInstances
+    End_Procedure
+    
+    Function ExecuteMake Handle hStatement Returns String
+        Boolean bFound
+        String sInstance sClass sClassPath sResult
+        Move (psString(CurrentArrayValue(hStatement))) to sInstance
+        Get IteratorMoveNext of hStatement to bFound
+        If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+        Move (psString(CurrentArrayValue(hStatement))) to sClass
+        Move (Replaces(".", sClass, "")) to sClass
+        Get psClassPath of (phFitNesseServer(Self)) to sClassPath
+        Handle hInstanceClass hInstance
+        Send Ignore_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+        Move False to Err
+        Move (Eval("U_" + sClassPath + sClass)) to hInstanceClass
+        Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+        If Err Function_Return (NoClassText(Self, sClass))
+        Get Create hInstanceClass to hInstance
+        Send AddInstance hInstance sInstance
+        Function_Return "OK"
+    End_Function
+    
+    Function ExecuteTable Handle hTable Returns String
+        Function_Return ""
+    End_Function
+    
+    Function ExecuteCall Handle hStatement Returns String
+        String sInstance sMethodName sArgument sResult
+        Handle hMethod hInstance
+        Boolean bFound
+        Move (psString(CurrentArrayValue(hStatement))) to sInstance
+        Get FindInstance sInstance to hInstance
+        Get IteratorMoveNext of hStatement to bFound
+        If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+        Move (psString(CurrentArrayValue(hStatement))) to sMethodName
+        If (hInstance = 0) Function_Return (NoMethodInClassText(Self, sMethodName))
+        If (Lowercase(sMethodName) = "table") Begin
+            Get IteratorMoveNext of hStatement to bFound
+            If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+            Get ExecuteTable (CurrentArrayValue(hStatement)) to sResult
+            Function_Return sResult
+        End
+        If (Left(Lowercase(sMethodName), 3) = "set") Begin
+            Get IteratorMoveNext of hStatement to bFound
+            If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+            Move (psString(CurrentArrayValue(hStatement))) to sArgument
+
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            Move False to Err
+            Move (Eval("SET_" + Mid(sMethodName, Length(sMethodName) - 3, 4))) to hMethod
+            Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName))
+
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            Move False to Err
+            Set hMethod of hInstance to sArgument
+            Send Trap_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName))
+            
+            Move "/__VOID__/" to sResult
+        End
+        Else Begin
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            Move False to Err
+            Move (Eval("GET_" + sMethodName)) to hMethod
+            Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName))
+
+
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            Move False to Err
+            Move 0 to LastErr
+            Get hMethod of hInstance to sResult
+            Send Trap_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            If (Err and (LastErr = DFERR_BAD_SYMBOL_EXPRESSION)) Begin
+                Function_Return (NoMethodInClassText(Self, sMethodName))
+            End
+        End
+        
+        Function_Return sResult
+    End_Function
+    
+    //Todo: Implement later
+    Function ExecuteCallAndAssign Handle hStatement Returns String
+        Function_Return "OK"
+    End_Function
+    
+    Function ExecuteInstruction String sInstruction Handle hStatement Returns String
+        String sResult
+        If (Lowercase(sInstruction) = "import") Get ExecuteImport hStatement to sResult
+        If (Lowercase(sInstruction) = "make") Get ExecuteMake hStatement to sResult
+        If (Lowercase(sInstruction) = "call") Get ExecuteCall hStatement to sResult
+        If (Lowercase(sInstruction) = "callandassign") Get ExecuteCallAndAssign hStatement to sResult
+        Function_Return sResult
+    End_Function
+    
+    Function ExecuteOneStatement Handle hStatement Returns Handle
+        String sInstanceType sResult
+        String sID sInstruction
+        Handle hResult hPart
+        Boolean bFound
+        Get psInstanceType of hStatement to sInstanceType
+        If (sInstanceType <> "List") Begin
+            Function_Return (ErrorResultObject(Self))
+        End
+        Else Begin
+            Get Create (RefClass(cSlimList)) to hResult
+            Send IteratorReset to hStatement
+            Get IteratorMoveNext of hStatement to bFound
+            If bFound Begin
+                Get CurrentArrayValue of hStatement to hPart
+                Get psString of hPart to sID
+                Get IteratorMoveNext of hStatement to bFound
+            End
+            If bFound Begin
+                Get CurrentArrayValue of hStatement to hPart
+                Get psString of hPart to sInstruction
+                Get IteratorMoveNext of hStatement to bFound
+            End
+            If (not(bFound)) Get MalformedInstructionText to sResult
+            Else Get ExecuteInstruction sInstruction hStatement to sResult
+            Send Add to hResult sID
+            Send Add to hResult sResult
+        End
+        Function_Return hResult
+    End_Function
+    
+    Function ExecuteStatements Handle hStatements Returns Handle
+        Object oSerializer is a cSlimSerializer
+        End_Object
+        String sSerialized
+        Send ResetInstances
+        Set pbStopHasBeenRequested to False
+        Handle hStatement hResult hResults
+        Get Create (RefClass(cSlimList)) to hResults
+        Send IteratorReset to hStatements
+        While (IteratorMoveNext(hStatements))
+            Get CurrentArrayValue of hStatements to hStatement
+            Get ExecuteOneStatement hStatement to hResult
+            Send AddObject to hResults hResult
+            Get Serialize of oSerializer hResult to sSerialized
+        Loop
+        Function_Return hResults
+    End_Function
+End_Class

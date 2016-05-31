@@ -1,0 +1,166 @@
+Use cSlimDeserializer.pkg
+Use cSlimSerializer.pkg
+Use cSlimReadableSerializer.pkg
+Use cSlimList.pkg
+Use cIsNumericType.pkg
+Use cSlimExecutor.pkg
+
+Class cFitNesseServer is a cObject
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property Handle phFitNesseRunner
+        Property Boolean pbAbortServer
+        Property String psAbortMessage
+        Property String psClassPath
+        Property String psIncompletePacket
+        
+        Object oSlimDeserializer is a cSlimDeserializer
+        End_Object
+        Object oSlimSerializer is a cSlimSerializer
+        End_Object
+        Object oReadableList is a cSlimReadableSerializer
+        End_Object
+        Object oExecutor is a cSlimExecutor
+            Set phFitNesseServer to Self
+        End_Object
+    End_Procedure
+    
+    Procedure Initialize
+        Set psIncompletePacket to ""
+    End_Procedure
+    
+    Procedure CloseConnection
+        Send CloseConnection to (phFitNesseRunner(Self))
+    End_Procedure
+    
+    Procedure AbortServer String sAbortMessage
+        Set psAbortMessage to sAbortMessage
+        Set pbAbortServer to True
+    End_Procedure
+    
+    Function LengthOfPacket String sData Returns Integer
+        String sLengthString
+        Move (Left(sData, 6)) to sLengthString
+        If (IsInteger(gcIsNumericType, sLengthString)) Function_Return (Integer(sLengthString))
+        Function_Return 0
+    End_Function
+    
+    Function ExecuteInstructions String sInstructions Returns Handle
+        Handle hStatements hResults
+        Get Deserialize of oSlimDeserializer sInstructions to hStatements
+        Get ExecuteStatements of oExecutor hStatements to hResults
+        String sStatements sResults
+        Get Serialize of oReadableList hStatements to sStatements
+        Get Serialize of oReadableList hResults to sResults
+        Send OutputLine to (phFitNesseRunner(Self)) (Character(13) + Character(10) + "Instructions executed:" + sStatements)
+        Send OutputLine to (phFitNesseRunner(Self)) (Character(13) + Character(10) + "Results:" + sResults)
+        Function_Return hResults
+    End_Function
+    
+    Procedure SendResultsToClient Handle hResults
+        String sResultString sLengthString
+        Get Serialize of oSlimSerializer hResults to sResultString
+        Get LengthFormat of oSlimSerializer (Length(sResultString)) to sLengthString
+        Move (sLengthString + sResultString) to sResultString
+        Send SendData to (phFitNesseRunner(Self)) sResultString
+    End_Procedure
+    
+    Function ProcessTheInstructions String sInstructions Returns Boolean
+        If (lowercase(sInstructions) = "bye") Begin
+            Function_Return False
+        End
+        Else Begin
+            Handle hResults
+            Get ExecuteInstructions sInstructions to hResults
+            Send SendResultsToClient hResults
+            Function_Return True
+        End
+    End_Function
+    
+    Function InitializeMessage Returns String
+        Function_Return ("Slim -- V0.3" + Character(13) + Character(10))
+    End_Function
+    
+    Procedure FinishServerSession
+        Send CloseConnection
+        #IFDEF C_DEBUG
+        Send Info_Box "Bye"
+        #ENDIF
+        Send FinishSession to (phFitNesseRunner(Self))
+    End_Procedure
+    
+    Procedure DoAbortServer
+        //Todo: Should somehow return an exception to Fitnesse regarding the cause (sAbortMessage)
+        //For example:
+        //"__EXCEPTION__:ABORT_SLIM_TEST:" which may have an optional suffix of: "message:<<reason>>".
+        //May also be logged to file...
+        Send FinishServerSession
+    End_Procedure
+    
+    Function Utf8ToOem String s Returns String
+        String sTest
+        Move (Mid(s, 2, 337)) to sTest
+        String sSmallAE sSmallOWithStroke sSmallAWithRingAbove
+        String sCapitalAE sCapitalOWithStroke sCapitalAWithRingAbove
+        Move (Character($C7) + Character($DD)) to sSmallAE
+        Move (Character($C7) + Character($F7)) to sSmallOWithStroke
+        Move (Character($C7) + Character($BE)) to sSmallAWithRingAbove
+        Move (Character($C7) + Character($C5)) to sCapitalAE
+        Move (Character($C7) + Character($7E)) to sCapitalOWithStroke  //Todo: Unable to initiate this string properly. $7E causes problems...
+        Move (Character($C7) + Character($2E)) to sCapitalAWithRingAbove
+        If (Pos(sSmallAE, s) > 0) Move (Replaces(sSmallAE, s, "ë")) to s
+        If (Pos(sSmallOWithStroke, s) > 0) Move (Replaces(sSmallOWithStroke, s, "õ")) to s
+        If (Pos(sSmallAWithRingAbove, s) > 0) Move (Replaces(sSmallAWithRingAbove, s, "Ü")) to s
+        If (Pos(sCapitalAE, s) > 0) Move (Replaces(sCapitalAE, s, "í")) to s
+        If (Pos(sCapitalOWithStroke, s) > 0) Move (Replaces(sCapitalOWithStroke, s, "ù")) to s
+        If (Pos(sCapitalAWithRingAbove, s) > 0) Move (Replaces(sCapitalAWithRingAbove, s, "è")) to s
+        Function_Return s
+    End_Function
+    
+    Function PacketIsComplete String sData Returns Boolean
+        Function_Return (Length(sData) - 7 = LengthOfPacket(Self, sData))
+    End_Function
+    
+    Procedure OnDataArrival String sData
+        If (pbAbortServer(Self)) Begin
+            Send DoAbortServer
+            Procedure_Return
+        End
+        
+        Move (psIncompletePacket(Self) + sData) to sData
+        
+        If (not(PacketIsComplete(Self, sData))) Begin
+            Set psIncompletePacket to sData
+            Procedure_Return
+        End
+        
+        Set psIncompletePacket to ""
+        String sInstructions
+        Get Utf8ToOem sData to sData
+        Get GetInstructionsFromData sData to sInstructions
+        Boolean bMore
+        If (sInstructions <> "") Begin
+            Get ProcessTheInstructions sInstructions to bMore
+            If (not(bMore)) Begin
+                Send FinishServerSession
+            End
+        End
+    End_Procedure
+    
+    Function GetInstructionsFromData String sData Returns String
+        Integer iLength
+        Get LengthOfPacket sData to iLength
+        If (iLength = 0) Begin
+             Error DFERR_PROGRAM ("Number format error: " + Left(sData, 7))
+             Function_Return ""
+        End
+        If (Mid(sData, 1, 7) <> ":") Begin
+            Error DFERR_PROGRAM ("protocol error: expected colon after message length field: " + Mid(sData, 1, 7))
+            Function_Return ""
+        End
+        String sInstructions
+        Move (Mid(sData, iLength, 8)) to sInstructions
+        Function_Return sInstructions
+    End_Function
+    
+End_Class

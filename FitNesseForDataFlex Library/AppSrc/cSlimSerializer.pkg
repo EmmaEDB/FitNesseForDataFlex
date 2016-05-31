@@ -1,0 +1,81 @@
+Use cSlimList.pkg
+// Packs up a list into a serialized String using a special format.  The list items must be strings, or lists.
+// They will be recursively serialized.
+// <p/>
+// Format:  [iiiiii:llllll:item...]
+// All lists (including lists within lists) Begin with [ and End with ].  After the [ is the 6 digit Number of items
+// in the list followed by a :.  Then comes each item which is composed of a 6 digit length a : and then the value
+// of the item followed by a :.
+Class cSlimSerializer is a cObject
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Property String psResult
+        Property Handle phList
+    End_Procedure
+    
+    Function LengthFormat Integer iLength Returns String
+        String sLengthFormatted
+        Move iLength to sLengthFormatted
+        While (Length(sLengthFormatted) < 6)
+            Move ("0" + sLengthFormatted) to sLengthFormatted
+        Loop
+        Move (sLengthFormatted + ":") to sLengthFormatted
+        Function_Return sLengthFormatted
+    End_Function
+    
+    Procedure AppendLength Integer iSize
+        Set psResult to (psResult(Self) + LengthFormat(Self, iSize))
+    End_Procedure
+    
+    Procedure AppendString String s
+        Set psResult to (psResult(Self) + s + ":")
+    End_Procedure
+    
+    Function Serialize Handle hList Returns String
+        Set psResult to "["
+        Send AppendLength (NumberOfItems(hList))
+        Integer i
+        String s
+        Send IteratorReset to hList
+        While (IteratorMoveNext(hList))
+            Get MarshalObjectToString (CurrentArrayValue(hList)) to s
+            Send AppendLength (Length(s))
+            Send AppendString s
+        Loop
+        Set psResult to (psResult(Self) + "]")
+        Function_Return (psResult(Self))
+    End_Function
+    
+    Function StringConvert String s Returns String
+        If (Pos("‘", s) > 0) Move (Replaces("‘", s, "ae")) to s
+        If (Pos("›", s) > 0) Move (Replaces("›", s, "oe")) to s
+        If (Pos("†", s) > 0) Move (Replaces("†", s, "aa")) to s
+        If (Pos("’", s) > 0) Move (Replaces("’", s, "AE")) to s
+        If (Pos("", s) > 0) Move (Replaces("", s, "OE")) to s
+        If (Pos("", s) > 0) Move (Replaces("", s, "AA")) to s
+        
+        //For ›vrig blir disse tegnene automatisk konvertert slik p† veien videre til Fitnesse:
+        //$90 -> $5F
+        //$91 -> $27
+        //$80 -> $5F
+        //$E5 -> $86        
+        //$FF -> $98        
+        //Men hvorfor???
+        Function_Return s
+    End_Function
+    
+    Function MarshalObjectToString Handle hObject Returns String
+        String s
+        If (hObject = 0) Move "null" to s
+        Else If (psInstanceType(hObject) = "String") Move (psString(hObject)) to s
+        Else If (psInstanceType(hObject) = "List") Begin
+            Object oSubSerializer is a cSlimSerializer
+            End_Object
+            Get Serialize of oSubSerializer hObject to s
+            Send Destroy of oSubSerializer
+        End
+        Get StringConvert s to s
+        Function_Return s
+    End_Function
+        
+End_Class

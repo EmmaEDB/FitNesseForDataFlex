@@ -1,0 +1,3 @@
+#IFNDEF C_FitNesse_Debug
+Define C_FitNesse_Debug
+#ENDIF
