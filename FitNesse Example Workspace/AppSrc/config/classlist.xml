@@ -1,5 +1,17 @@
 <classList xmlns="http://www.dataaccess.com/VisualDataFlex/2006/classlist/">
-	<VDFLibraryTimeStamp>2015-12-22T19:44:52</VDFLibraryTimeStamp><libraries></libraries>
+	<VDFLibraryTimeStamp>2015-12-22T19:44:52</VDFLibraryTimeStamp>
+	<libraries>
+		<library>
+			<libraryPath>..\FitNesseForDataFlex Library\FitNesse for DataFlex.sws</libraryPath>
+			<libraryTimeStamp>2016-05-30T15:52:15</libraryTimeStamp>
+			<libraryID>Lib1</libraryID>
+		</library>
+		<library>
+			<libraryPath>..\..\vdfunit\VDFUnit\VDFUnit-VDF182.sws</libraryPath>
+			<libraryTimeStamp>2016-05-19T12:14:25</libraryTimeStamp>
+			<libraryID>Lib2</libraryID>
+		</library>
+	</libraries>
 	<classes>
 		<class>
 			<className>cWebButton</className>
@@ -952,6 +964,41 @@
 			<package>cCJCommandBarSystem.pkg</package>
 			<groupName>Menus and Toolbars</groupName>
 			<libraryID>0</libraryID>
+		</class>
+		<class>
+			<className>cComCCallStack</className>
+			<image>ControlCOM.ico</image>
+			<package>vdfdbg.pkg</package>
+			<groupName>ActiveX</groupName>
+			<libraryID>Lib2</libraryID>
+		</class>
+		<class>
+			<className>cComCMessageTrace</className>
+			<image>ControlCOM.ico</image>
+			<package>vdfdbg.pkg</package>
+			<groupName>ActiveX</groupName>
+			<libraryID>Lib2</libraryID>
+		</class>
+		<class>
+			<className>cComCTablesWindow</className>
+			<image>ControlCOM.ico</image>
+			<package>vdfdbg.pkg</package>
+			<groupName>ActiveX</groupName>
+			<libraryID>Lib2</libraryID>
+		</class>
+		<class>
+			<className>cComCVariablesWindow</className>
+			<image>ControlCOM.ico</image>
+			<package>vdfdbg.pkg</package>
+			<groupName>ActiveX</groupName>
+			<libraryID>Lib2</libraryID>
+		</class>
+		<class>
+			<className>cComCWatches</className>
+			<image>ControlCOM.ico</image>
+			<package>vdfdbg.pkg</package>
+			<groupName>ActiveX</groupName>
+			<libraryID>Lib2</libraryID>
 		</class>
 	</classes>
 </classList>

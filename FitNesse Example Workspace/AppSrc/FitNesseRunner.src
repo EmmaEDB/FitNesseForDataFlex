@@ -1,0 +1,38 @@
+Use FitNesseRunnerPrecompile.pkg
+
+Object oFitNesseRunner is a cFitNesseRunnerApplication
+End_Object
+
+Object oMain is a cFitNesseRunnerPanel
+    Set phFitNesseRunner to oFitNesseRunner
+    Set phMain of oFitNesseRunner to Self
+    Set Label to "DataFlex FitNesse Runner"
+    Set Size to 213 433
+    Object oClientArea is a ClientArea
+        Send ClientAreaInitialize to oFitNesseRunner
+        Use FitNesseRunner.vw
+        Set phFitNesseRunnerView of oFitNesseRunner to oFitNesseRunnerView
+    End_Object
+    
+    Object oWinsock is a cFitNesseRunnerWinsock
+        Set Size to 17 19
+        Set Location to 78 18
+        Set phSocket of oFitNesseRunner to Self
+        Set phFitNesseRunner to oFitNesseRunner
+        // WARNING: Do NOT modify this code.
+        // The Embed_ActiveX_Resource...End_Embed_ActiveX_Resource code block
+        // is generated and maintained by the Studio.
+        Embed_ActiveX_Resource 
+        IUM0EggAAADlAgAA5QIAAJLYjSQAAAYAAAAAAAAAAAAAAAAAAAAAAA.
+        End_Embed_ActiveX_Resource 
+    End_Object
+    
+End_Object
+
+Use cFitnesseFixtures.pkg
+
+//Todo: Must suppress error dialogs, and preferably other dialogs (message boxes, etc.)
+
+Send Start to oFitNesseRunner
+
+Start_UI
