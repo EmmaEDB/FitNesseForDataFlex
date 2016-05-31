@@ -1,0 +1,9 @@
+!define TEST_SYSTEM {slim}
+
+!define VDF_PATH {cFitnesse}
+!define VDF_COMMAND_PATTERN {%m -r Config.ws %p}
+!define VDF_TEST_RUNNER {C:\Projects\FitNesseForDataFlex\FitNesse Example Workspace\Programs\FitNesseRunner.exe}
+
+!path ${VDF_PATH}
+!define COMMAND_PATTERN VDF_COMMAND_PATTERN
+!define TEST_RUNNER VDF_TEST_RUNNER

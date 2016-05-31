@@ -1,0 +1,11 @@
+|Division|
+|numerator|denominator|quotient?|
+|10       |2          |5,0000   |
+|10       |5          |2,0000   |
+|5        |2          |2,5000   |
+
+
+|script         |division|
+|set numerator  |10      |
+|set denominator|2       |
+|check          |quotient|5,0000|
