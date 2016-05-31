@@ -8,3 +8,18 @@ glob:*.loc
 glob:*.prn
 glob:*.tmp
 glob:~*.docx
+syntax: glob
+*.zip
+FitNesseRoot/content.txt
+FitNesseRoot/ErrorLogs/*
+FitNesseRoot/RecentChanges/*
+FitNesseRoot/files/*
+backup/*
+*.prp
+*.pkd
+*.pdp
+*.pbg
+*.fld
+FitNesse/FitNesseRoot/FitNesse/*
+FitNesse/fitnesse-standalone.jar
+FitNesse/FitNesseRoot/TemplateLibrary/
