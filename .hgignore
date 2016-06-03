@@ -20,6 +20,5 @@ backup/*
 *.pdp
 *.pbg
 *.fld
-FitNesse/FitNesseRoot/FitNesse/*
+FitNesse/FitNesseRoot/*
 FitNesse/fitnesse-standalone.jar
-FitNesse/FitNesseRoot/TemplateLibrary/
