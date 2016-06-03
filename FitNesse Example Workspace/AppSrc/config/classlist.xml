@@ -7,8 +7,8 @@
 			<libraryID>Lib1</libraryID>
 		</library>
 		<library>
-			<libraryPath>..\..\vdfunit\VDFUnit\VDFUnit-VDF182.sws</libraryPath>
-			<libraryTimeStamp>2016-05-19T12:14:25</libraryTimeStamp>
+			<libraryPath>..\DataFlexPatterns\DataFlexPatterns.sws</libraryPath>
+			<libraryTimeStamp>2016-06-03T22:16:36</libraryTimeStamp>
 			<libraryID>Lib2</libraryID>
 		</library>
 	</libraries>
@@ -964,41 +964,6 @@
 			<package>cCJCommandBarSystem.pkg</package>
 			<groupName>Menus and Toolbars</groupName>
 			<libraryID>0</libraryID>
-		</class>
-		<class>
-			<className>cComCCallStack</className>
-			<image>ControlCOM.ico</image>
-			<package>vdfdbg.pkg</package>
-			<groupName>ActiveX</groupName>
-			<libraryID>Lib2</libraryID>
-		</class>
-		<class>
-			<className>cComCMessageTrace</className>
-			<image>ControlCOM.ico</image>
-			<package>vdfdbg.pkg</package>
-			<groupName>ActiveX</groupName>
-			<libraryID>Lib2</libraryID>
-		</class>
-		<class>
-			<className>cComCTablesWindow</className>
-			<image>ControlCOM.ico</image>
-			<package>vdfdbg.pkg</package>
-			<groupName>ActiveX</groupName>
-			<libraryID>Lib2</libraryID>
-		</class>
-		<class>
-			<className>cComCVariablesWindow</className>
-			<image>ControlCOM.ico</image>
-			<package>vdfdbg.pkg</package>
-			<groupName>ActiveX</groupName>
-			<libraryID>Lib2</libraryID>
-		</class>
-		<class>
-			<className>cComCWatches</className>
-			<image>ControlCOM.ico</image>
-			<package>vdfdbg.pkg</package>
-			<groupName>ActiveX</groupName>
-			<libraryID>Lib2</libraryID>
 		</class>
 	</classes>
 </classList>
