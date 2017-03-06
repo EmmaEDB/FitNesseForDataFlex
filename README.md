@@ -13,6 +13,5 @@ http://support.dataaccess.com/Forums/showthread.php?59124-Acceptance-testing-Fit
 
 ### Licensing ###
 All original work on this software is covered by the MIT License. See License.txt.
-This includes all other executables.
 
 All work derived from the fitSharp project (FitNesseForDataFlexStdinStdout) is covered by the Common Public License. See FitNesseForDataFlexStdinStdout\CPLicense.txt.
