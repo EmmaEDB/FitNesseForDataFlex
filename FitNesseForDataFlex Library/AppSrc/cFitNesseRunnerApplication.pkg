@@ -21,9 +21,26 @@ Class cFitNesseRunnerApplication is a cApplication
         End_Object
         Set phFitNesseRunner of oFitNesseServer to Self
         Set phFitNesseServer to oFitNesseServer
+    End_Procedure
+    
+    Procedure FitNesseForDataFlexStdinStdout_Not_Registered
+        Error DFERR_SETUP ("Dll not registered.\n\n" + ;
+            "Please run this batch file from the FitNesseForDataFlex folder:\n\n" + ;
+            "RegisterStdinStdoutLibrary.bat")
+        String sPath
+        Get GetApplicationPath of ghoApplication to sPath
+        If (Lowercase(Right(sPath, 9)) = "\programs") Move (Left(sPath, Length(sPath) - 9)) to sPath
+        Send vShellExecute "Open" "explorer" sPath sPath
+        Abort
+    End_Procedure
+    
+    Procedure InitStdinStdout
+        Send Ignore_Error to Error_Object_Id DFERR_UNABLE_TO_INSTANTIATE_COM_OBJECT
         Object oStdInStdOut is a cComFitNesseForDataFlexStdInStdOut
             Set peAutoCreate to acAutoCreate
         End_Object
+        Send Trap_Error to Error_Object_Id DFERR_UNABLE_TO_INSTANTIATE_COM_OBJECT
+        If (Err and (LastErr = DFERR_UNABLE_TO_INSTANTIATE_COM_OBJECT)) Send FitNesseForDataFlexStdinStdout_Not_Registered
     End_Procedure
     
     Procedure ReadParameters
@@ -54,6 +71,7 @@ Class cFitNesseRunnerApplication is a cApplication
     
     Procedure ClientAreaInitialize
         Send ReadParameters
+        Send InitStdinStdout
         Send InitWorkspace
     End_Procedure
     
