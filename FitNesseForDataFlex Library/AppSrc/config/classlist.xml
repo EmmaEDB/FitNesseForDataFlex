@@ -1,5 +1,12 @@
 <classList xmlns="http://www.dataaccess.com/VisualDataFlex/2006/classlist/">
-	<VDFLibraryTimeStamp>2015-12-22T19:44:52</VDFLibraryTimeStamp><libraries></libraries>
+	<VDFLibraryTimeStamp>2015-12-22T18:44:52</VDFLibraryTimeStamp>
+	<libraries>
+		<library>
+			<libraryPath>..\DataFlexPatterns\DataFlexPatterns-DF182.sws</libraryPath>
+			<libraryTimeStamp>2016-12-23T09:53:59</libraryTimeStamp>
+			<libraryID>Lib2</libraryID>
+		</library>
+	</libraries>
 	<classes>
 		<class>
 			<className>cWebButton</className>

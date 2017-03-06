@@ -1,6 +1,5 @@
 Use DfAllEnt.pkg
 Use Dftimer.pkg
-Use cComWinsock.pkg
 Use FitNesseRunnerCompileOptions.pkg
 #IFNDEF C_FitNesse_ClassPath
     Define C_FitNesse_ClassPath for "cFitnesse"
@@ -9,7 +8,6 @@ Use cFitNesseServer.pkg
 Use cSlimDeserializer.pkg
 Use cSlimList.pkg
 Use cSeqOutputFile.pkg
-Use cFitNesseRunnerWinsock.pkg
 Use cFitNesseServer.pkg
 Use cFitNesseRunnerApplication.pkg
 Use cFitNesseRunnerPanel.pkg

@@ -38,13 +38,6 @@ Class cFitNesseServer is a cObject
         Set pbAbortServer to True
     End_Procedure
     
-    Function LengthOfPacket String sData Returns Integer
-        String sLengthString
-        Move (Left(sData, 6)) to sLengthString
-        If (IsInteger(gcIsNumericType, sLengthString)) Function_Return (Integer(sLengthString))
-        Function_Return 0
-    End_Function
-    
     Function ExecuteInstructions String sInstructions Returns Handle
         Handle hStatements hResults
         Get Deserialize of oSlimDeserializer sInstructions to hStatements
@@ -78,7 +71,7 @@ Class cFitNesseServer is a cObject
     End_Function
     
     Function InitializeMessage Returns String
-        Function_Return ("Slim -- V0.3" + Character(13) + Character(10))
+        Function_Return ("Slim -- V0.5" + Character(13) + Character(10))
     End_Function
     
     Procedure FinishServerSession
@@ -117,50 +110,27 @@ Class cFitNesseServer is a cObject
         Function_Return s
     End_Function
     
-    Function PacketIsComplete String sData Returns Boolean
-        Function_Return (Length(sData) - 7 = LengthOfPacket(Self, sData))
-    End_Function
-    
-    Procedure OnDataArrival String sData
+    Function OnDataArrival String sData Returns Boolean
+        Boolean bFinished
         If (pbAbortServer(Self)) Begin
             Send DoAbortServer
-            Procedure_Return
-        End
-        
-        Move (psIncompletePacket(Self) + sData) to sData
-        
-        If (not(PacketIsComplete(Self, sData))) Begin
-            Set psIncompletePacket to sData
-            Procedure_Return
+            Move True to bFinished
+            Function_Return bFinished
         End
         
         Set psIncompletePacket to ""
         String sInstructions
         Get Utf8ToOem sData to sData
-        Get GetInstructionsFromData sData to sInstructions
+        Move sData to sInstructions
         Boolean bMore
         If (sInstructions <> "") Begin
             Get ProcessTheInstructions sInstructions to bMore
             If (not(bMore)) Begin
                 Send FinishServerSession
+                Move True to bFinished
             End
         End
-    End_Procedure
-    
-    Function GetInstructionsFromData String sData Returns String
-        Integer iLength
-        Get LengthOfPacket sData to iLength
-        If (iLength = 0) Begin
-             Error DFERR_PROGRAM ("Number format error: " + Left(sData, 7))
-             Function_Return ""
-        End
-        If (Mid(sData, 1, 7) <> ":") Begin
-            Error DFERR_PROGRAM ("protocol error: expected colon after message length field: " + Mid(sData, 1, 7))
-            Function_Return ""
-        End
-        String sInstructions
-        Move (Mid(sData, iLength, 8)) to sInstructions
-        Function_Return sInstructions
+        Function_Return bFinished
     End_Function
     
 End_Class

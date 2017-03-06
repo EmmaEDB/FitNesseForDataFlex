@@ -2,6 +2,7 @@ Use cApplication.pkg
 Use cFitNesseRunnerLogFile.pkg
 Use cFitNesseServer.pkg
 Register_Procedure OutputLine String sLine
+Use FitNesseForDataFlexStdinStdout.pkg
 
 Class cFitNesseRunnerApplication is a cApplication
     Procedure Construct_Object
@@ -9,12 +10,10 @@ Class cFitNesseRunnerApplication is a cApplication
         Set psAutoOpenWorkspace to ""
         Property Handle phMain
         Property Handle phFitNesseServer
-        Property Handle phSocket
         Property Handle phFitNesseRunnerView
         Property Handle phLogFile
         Property String psWorkspace
         Property String psClassPath
-        Property Integer piPort
         Object oLogFile is a cFitNesseRunnerLogFile
         End_Object
         Set phLogFile to oLogFile
@@ -22,9 +21,9 @@ Class cFitNesseRunnerApplication is a cApplication
         End_Object
         Set phFitNesseRunner of oFitNesseServer to Self
         Set phFitNesseServer to oFitNesseServer
-    End_Procedure
-    Procedure End_Construct_Object
-        Forward Send End_Construct_Object
+        Object oStdInStdOut is a cComFitNesseForDataFlexStdInStdOut
+            Set peAutoCreate to acAutoCreate
+        End_Object
     End_Procedure
     
     Procedure ReadParameters
@@ -48,7 +47,6 @@ Class cFitNesseRunnerApplication is a cApplication
             Get Argument of hoCmdLine 4 to iPortNumber
             Get Argument of hoCmdLine 2 to sWorkspace
             Get Argument of hoCmdLine 3 to sClassPath
-            Set piPort to iPortNumber
             Set psWorkspace to sWorkspace
             Set psClassPath to sClassPath
         End
@@ -83,7 +81,6 @@ Class cFitNesseRunnerApplication is a cApplication
     End_Procedure
     
     Procedure PostInitialize
-        Set piPort of (phSocket(Self)) to (piPort(Self))
         Set psClassPath of (phFitNesseServer(Self)) to (psClassPath(Self))
     End_Procedure
     
@@ -93,16 +90,21 @@ Class cFitNesseRunnerApplication is a cApplication
     
     Procedure Start
         Send Initialize to (phFitNesseServer(Self))
-        Send Initialize to (phSocket(Self))
+        Send ComInit to oStdInStdOut
+        Send ComWriteStdOut to oStdInStdOut (InitializeMessage(Self))  //"Slim -- Version number"
+        String sVal
+        Boolean bFinished
+        While (not(bFinished))
+            Move (ComReadStdIn(oStdInStdOut(Self))) to sVal
+            If (sVal <> "") Showln sVal
+            Get OnDataArrival of (phFitNesseServer(Self)) sVal to bFinished
+        Loop
     End_Procedure
     
     Function InitializeMessage Returns String
         Function_Return (InitializeMessage(phFitNesseServer(Self)))
     End_Function
     
-    Procedure OnDataArrival String sData
-        Send OnDataArrival to (phFitNesseServer(Self)) sData
-    End_Procedure
     
     Procedure AbortNow String sAbortMessage
         #IFDEF C_FitNesse_Debug
@@ -137,10 +139,9 @@ Class cFitNesseRunnerApplication is a cApplication
     End_Procedure
     
     Procedure SendData String sData
-        Send SendData to (phSocket(Self)) sData
+        Send ComWriteStdOut to oStdInStdOut sData
     End_Procedure
     
     Procedure CloseConnection
-        Send CloseConnection to (phSocket(Self))
     End_Procedure
 End_Class

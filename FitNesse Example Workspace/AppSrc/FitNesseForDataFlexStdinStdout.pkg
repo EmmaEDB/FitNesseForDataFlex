@@ -1,0 +1,111 @@
+// DataFlex COM proxy classes generated from FitNesseForDataFlexStdinStdout\bin\Debug\FitNesseForDataFlexStdinStdout.tlb
+Use FlexCom20.pkg
+
+
+// CLSID: {B5287F51-A008-3227-AF01-492F417C64CB}
+Class cCom_ConsoleSession is a Mixin
+End_Class
+
+// CoClass
+// ProgID: FitNesseForDataFlexStdinStdout.ConsoleSession
+// CLSID: {DD8200AA-58DE-34AB-9BF8-3BFFF90DA18A}
+Class cComConsoleSession is a cComAutomationObject
+    Import_Class_Protocol cCom_ConsoleSession
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set psProgID to "{DD8200AA-58DE-34AB-9BF8-3BFFF90DA18A}"
+        Set peAutoCreate to acNoAutoCreate
+    End_Procedure
+End_Class
+
+// CLSID: {FFA6D407-6BD8-449B-ADD6-017C3B0E586C}
+Class cComIFitNesseForDataFlexStdInStdOut is a Mixin
+
+    Function ComReadStdIn Returns String
+        Handle hDispatchDriver
+        String retVal
+        Get phDispatchDriver to hDispatchDriver
+        Get InvokeComMethod of hDispatchDriver 1610743808 OLE_VT_BSTR to retVal
+        Function_Return retVal
+    End_Function
+
+    Procedure ComWriteStdOut String llvalue
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Send DefineParam to hDispatchDriver OLE_VT_BSTR llvalue
+        Send InvokeComMethod to hDispatchDriver 1610743809 OLE_VT_VOID
+    End_Procedure
+
+    Procedure ComInit
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send InvokeComMethod to hDispatchDriver 1610743810 OLE_VT_VOID
+    End_Procedure
+End_Class
+
+// CoClass
+// ProgID: StdInStdOut_Com
+// CLSID: {032C2561-BBDA-49B8-874D-0D58C321E1BD}
+Class cComFitNesseForDataFlexStdInStdOut is a cComAutomationObject
+    Import_Class_Protocol cComIFitNesseForDataFlexStdInStdOut
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set psProgID to "{032C2561-BBDA-49B8-874D-0D58C321E1BD}"
+        Set peAutoCreate to acNoAutoCreate
+    End_Procedure
+End_Class
+
+// CLSID: {B66E1677-33D1-37E8-A375-9E7075128D28}
+Class cCom_IdentifierName is a Mixin
+End_Class
+
+// CoClass
+// CLSID: {7D93C488-172D-3165-8D0A-5C95CAA1F3CE}
+Class cComIdentifierName is a cComAutomationObject
+    Import_Class_Protocol cCom_IdentifierName
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        Set peAutoCreate to acNoAutoCreate
+    End_Procedure
+End_Class
+
+// CLSID: {6A345F18-749C-3F75-A7DB-6683915AE975}
+Class cComISession is a cComAutomationObject
+
+    Procedure ComWrite String llmessage String llprefixFormat
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 2
+        Send DefineParam to hDispatchDriver OLE_VT_BSTR llmessage
+        Send DefineParam to hDispatchDriver OLE_VT_BSTR llprefixFormat
+        Send InvokeComMethod to hDispatchDriver 1610743808 OLE_VT_VOID
+    End_Procedure
+
+    Procedure ComWrite_2 String llmessage
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Send DefineParam to hDispatchDriver OLE_VT_BSTR llmessage
+        Send InvokeComMethod to hDispatchDriver 1610743809 OLE_VT_VOID
+    End_Procedure
+
+    Function ComRead Integer lllength Returns String
+        Handle hDispatchDriver
+        String retVal
+        Get phDispatchDriver to hDispatchDriver
+        Send PrepareParams to hDispatchDriver 1
+        Send DefineParam to hDispatchDriver OLE_VT_I4 lllength
+        Get InvokeComMethod of hDispatchDriver 1610743810 OLE_VT_BSTR to retVal
+        Function_Return retVal
+    End_Function
+
+    Procedure ComClose
+        Handle hDispatchDriver
+        Get phDispatchDriver to hDispatchDriver
+        Send InvokeComMethod to hDispatchDriver 1610743811 OLE_VT_VOID
+    End_Procedure
+End_Class

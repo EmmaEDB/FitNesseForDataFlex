@@ -3,12 +3,12 @@
 	<libraries>
 		<library>
 			<libraryPath>..\FitNesseForDataFlex Library\FitNesse for DataFlex.sws</libraryPath>
-			<libraryTimeStamp>2016-05-30T15:52:15</libraryTimeStamp>
+			<libraryTimeStamp>2016-12-23T09:58:04</libraryTimeStamp>
 			<libraryID>Lib1</libraryID>
 		</library>
 		<library>
 			<libraryPath>..\DataFlexPatterns\DataFlexPatterns.sws</libraryPath>
-			<libraryTimeStamp>2016-06-03T22:16:36</libraryTimeStamp>
+			<libraryTimeStamp>2016-12-23T09:53:59</libraryTimeStamp>
 			<libraryID>Lib2</libraryID>
 		</library>
 	</libraries>
