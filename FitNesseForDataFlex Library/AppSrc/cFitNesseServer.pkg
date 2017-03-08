@@ -77,7 +77,7 @@ Class cFitNesseServer is a cObject
     
     Procedure FinishServerSession
         Send CloseConnection
-        #IFDEF C_DEBUG
+        #IFDEF C_FitNesse_Debug
         Send Info_Box "Bye"
         #ENDIF
         Send FinishSession to (phFitNesseRunner(Self))
