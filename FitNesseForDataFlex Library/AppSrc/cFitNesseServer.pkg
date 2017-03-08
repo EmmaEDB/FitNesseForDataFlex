@@ -2,9 +2,10 @@ Use cSlimDeserializer.pkg
 Use cSlimSerializer.pkg
 Use cSlimReadableSerializer.pkg
 Use cSlimList.pkg
-Use cIsNumericType.pkg
+Use cStringMethods.pkg
 Use cSlimExecutor.pkg
 
+//Todo: Rename to cSlimServer? (The FitNesse server is the java executable)
 Class cFitNesseServer is a cObject
     Procedure Construct_Object
         Forward Send Construct_Object
@@ -21,7 +22,7 @@ Class cFitNesseServer is a cObject
         Object oReadableList is a cSlimReadableSerializer
         End_Object
         Object oExecutor is a cSlimExecutor
-            Set phFitNesseServer to Self
+            Set phSlimServer to Self
         End_Object
     End_Procedure
     

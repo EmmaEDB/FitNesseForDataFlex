@@ -1,4 +1,4 @@
-Use cArrayIteratorInteger.pkg
+Use cArrayIterator.pkg
 
 Class cSlimListObject is a cObject
     Procedure Construct_Object

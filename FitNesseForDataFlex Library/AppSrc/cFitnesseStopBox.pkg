@@ -1,8 +1,9 @@
+Use cFitnesseFixture.pkg
 Use Msgbox.pkg
 
-Class cFitnesseStopBox is a cObject
+Class cFitnesseStopBox is a cFitnesseFixture
     Function Stop Returns String
-        Send Stop_Box "Stop"
+        Send Info_Box "Stop"
         Function_Return "true"
     End_Function
 End_Class

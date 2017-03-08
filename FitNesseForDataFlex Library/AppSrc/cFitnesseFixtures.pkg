@@ -4,11 +4,11 @@ Use gFormatNumbers.pkg
 
 Class cFitnesse_Number_Mixin is a Mixin
     Function NumberConvert Number nNumber Returns String
-        Function_Return (FormatNumber(nNumber, 4))
+        Function_Return nNumber
     End_Function
 End_Class
 
-Class cFitnesseDivision is a cObject
+Class cFitnesseDivision is a cFitnesseFixture
     Procedure Construct_Object
         Forward Send Construct_Object
         

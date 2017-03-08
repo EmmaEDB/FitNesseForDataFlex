@@ -12,7 +12,9 @@ Object oMain is a cFitNesseRunnerPanel
         Send ClientAreaInitialize to oFitNesseRunner
         Use FitNesseRunner.vw
         Set phFitNesseRunnerView of oFitNesseRunner to oFitNesseRunnerView
+        
     End_Object
+    
     
 End_Object
 

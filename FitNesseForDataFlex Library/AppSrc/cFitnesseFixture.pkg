@@ -1,0 +1,14 @@
+Class cFitnesseFixture is a cObject
+    Function BeginTable Returns String
+        Function_Return "/__VOID__/"
+    End_Function
+    Function Reset Returns String
+        Function_Return "/__VOID__/"
+    End_Function
+    Function Execute Returns String
+        Function_Return "/__VOID__/"
+    End_Function
+    Function EndTable Returns String
+        Function_Return "/__VOID__/"
+    End_Function
+End_Class

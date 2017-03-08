@@ -7,12 +7,12 @@ Use FitNesseRunnerCompileOptions.pkg
 Use cFitNesseServer.pkg
 Use cSlimDeserializer.pkg
 Use cSlimList.pkg
-Use cSeqOutputFile.pkg
+Use cSeqFile.pkg
 Use cFitNesseServer.pkg
 Use cFitNesseRunnerApplication.pkg
 Use cFitNesseRunnerPanel.pkg
 Use cFitNesseRunnerLogFile.pkg
-Use cSeqOutputFile.pkg
+Use cSeqFile.pkg
 Use cFitNesseRunnerPanel.pkg
 Use cFitnesseStopBox.pkg
 Use cFitnesseFitnesseSlimtestTestSlim.pkg

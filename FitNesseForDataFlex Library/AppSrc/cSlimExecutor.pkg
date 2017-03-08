@@ -1,11 +1,15 @@
 Use cSlimList.pkg
+Use Constants.pkg
 
 Class cSlimExecutor is a cObject
     Procedure Construct_Object
         Property Boolean pbStopHasBeenRequested
-        Property Handle phFitNesseServer
+        Property Handle phSlimServer
         Property Handle[] phInstances
         Property String[] psInstances
+        Property String[] psInstancesClass
+        Property String[] psSymbols
+        Property String[] psSymbolValues
         Property Integer piCurrentRow
     End_Procedure
     
@@ -17,8 +21,25 @@ Class cSlimExecutor is a cObject
         Function_Return ("__EXCEPTION__:message:<<NO_CLASS " + sClass + ">>")
     End_Function
     
-    Function NoMethodInClassText String sMethodName Returns String
-        Function_Return ("__EXCEPTION__:message:<<NO_METHOD_IN_CLASS " + sMethodName + ">>")
+    Function NoMethodInClassText String sMethodName String sClass Returns String
+        Function_Return ("__EXCEPTION__:message:<<NO_METHOD_IN_CLASS" * sMethodName * sClass + ">>")
+    End_Function
+    
+    Function NoInstanceText String sInstance Returns String
+        Function_Return ("__EXCEPTION__:message:<<NO_INSTANCE" * sInstance + ">>")
+    End_Function
+    
+    Function DataFlexErrorText Returns String
+        String sLastErrorText sLastCallStack
+        //Todo: Implement ErrorSystem class which allows us to get these:
+        //Get psLastErrorText of Error_Object_Id to sLastErrorText
+        //Get psLastCallstack of Error_Object_Id to sLastCallStack
+        Function_Return ("__EXCEPTION__:<DataFlex Error number" * ;
+            String(Current_Error_Number(Error_Object_Id)) + ;
+            ", line number" * String(Error_Line_Number(Error_Object_Id)) + C_CrLf + ;
+            Error_Description(Error_Object_Id, Current_Error_Number(Error_Object_Id), "") + ;
+            C_CrLf + "Last error text:" * sLastErrorText + C_CrLf + C_CrLf + ;
+            "Last call stack:" + C_CrLf + sLastCallStack + C_CrLf + ">")
     End_Function
     
     Function ErrorResultObject String sMessage Returns Handle
@@ -33,33 +54,44 @@ Class cSlimExecutor is a cObject
         Function_Return "OK"
     End_Function
     
-    Procedure AddInstance Handle hInstance String sInstance
+    Procedure AddInstance Handle hInstance String sInstance String sClass
         Handle[] hInstances
         String[] sInstances
+        String[] sInstancesClass
         Get phInstances to hInstances
         Get psInstances to sInstances
+        Get psInstancesClass to sInstancesClass
         Move hInstance to hInstances[SizeOfArray(hInstances)]
         Move sInstance to sInstances[SizeOfArray(sInstances)]
+        Move sClass to sInstancesClass[SizeOfArray(sInstancesClass)]
         Set phInstances to hInstances
         Set psInstances to sInstances
+        Set psInstancesClass to sInstancesClass
     End_Procedure
     
     Function FindInstance String sInstance Returns Handle
+        Integer iIndex
+        Get FindInstanceIndex sInstance to iIndex
+        If (iIndex = -1) Function_Return 0
         Handle[] hInstances
-        String[] sInstances
         Get phInstances to hInstances
+        Function_Return hInstances[iIndex]
+    End_Function
+    
+    Function FindInstanceIndex String sInstance Returns Integer
+        String[] sInstances
         Get psInstances to sInstances
         Integer iIndex
         Move (SearchArray(sInstance, sInstances)) to iIndex
-        If (iIndex <> -1) Function_Return hInstances[iIndex]
-        Else Function_Return 0
+        Function_Return iIndex
     End_Function
     
     Procedure ResetInstances
-        Handle[] hInstances
-        String[] sInstances
-        Set phInstances to hInstances
-        Set psInstances to sInstances
+        Handle[] hEmpty
+        String[] sEmpty
+        Set phInstances to hEmpty
+        Set psInstances to sEmpty
+        Set psInstancesClass to sEmpty
     End_Procedure
     
     Function ExecuteMake Handle hStatement Returns String
@@ -70,7 +102,7 @@ Class cSlimExecutor is a cObject
         If (not(bFound)) Function_Return (MalformedInstructionText(Self))
         Move (psString(CurrentArrayValue(hStatement))) to sClass
         Move (Replaces(".", sClass, "")) to sClass
-        Get psClassPath of (phFitNesseServer(Self)) to sClassPath
+        Get psClassPath of (phSlimServer(Self)) to sClassPath
         Handle hInstanceClass hInstance
         Send Ignore_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
         Move False to Err
@@ -78,7 +110,7 @@ Class cSlimExecutor is a cObject
         Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
         If Err Function_Return (NoClassText(Self, sClass))
         Get Create hInstanceClass to hInstance
-        Send AddInstance hInstance sInstance
+        Send AddInstance hInstance sInstance sClass
         Function_Return "OK"
     End_Function
     
@@ -87,15 +119,91 @@ Class cSlimExecutor is a cObject
     End_Function
     
     Function ExecuteCall Handle hStatement Returns String
-        String sInstance sMethodName sArgument sResult
+        String sInstance sClass sMethodName sArgument sResult
         Handle hMethod hInstance
         Boolean bFound
         Move (psString(CurrentArrayValue(hStatement))) to sInstance
-        Get FindInstance sInstance to hInstance
+        Integer iIndex
+        Get FindInstanceIndex sInstance to iIndex
+        Handle[] hInstances
+        Get phInstances to hInstances
+        If (iIndex <> -1) Move hInstances[iIndex] to hInstance
         Get IteratorMoveNext of hStatement to bFound
         If (not(bFound)) Function_Return (MalformedInstructionText(Self))
         Move (psString(CurrentArrayValue(hStatement))) to sMethodName
-        If (hInstance = 0) Function_Return (NoMethodInClassText(Self, sMethodName))
+        If (hInstance = 0) Function_Return (NoInstanceText(Self, sInstance))
+        String[] sInstancesClass
+        Get psInstancesClass to sInstancesClass
+        Move sInstancesClass[iIndex] to sClass
+        If (Lowercase(sMethodName) = "table") Begin
+            Get IteratorMoveNext of hStatement to bFound
+            If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+            Get ExecuteTable (CurrentArrayValue(hStatement)) to sResult
+            Function_Return sResult
+        End
+        If (Left(Lowercase(sMethodName), 3) = "set") Begin
+            Get IteratorMoveNext of hStatement to bFound
+            If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+            Move (psString(CurrentArrayValue(hStatement))) to sArgument
+            If (Left(sArgument, 1) = "$") Get SymbolValue sArgument to sArgument
+
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            Move False to Err
+            Move (Eval("SET_" + Mid(sMethodName, Length(sMethodName) - 3, 4))) to hMethod
+            Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
+
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            Move False to Err
+            Set hMethod of hInstance to sArgument
+            Send Trap_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            If (Err and (Current_Error_Number(Error_Object_Id) = DFERR_BAD_MESSAGE)) Begin
+                Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
+            End
+            If (Err) Function_Return (DataFlexErrorText(self))
+            Move "/__VOID__/" to sResult
+        End
+        Else Begin
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            Move False to Err
+            Move (Eval("GET_" + sMethodName)) to hMethod
+            Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
+            
+            Send Ignore_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            Move False to Err
+            Get hMethod of hInstance to sResult
+            Send Trap_Error to Error_Object_Id DFERR_BAD_MESSAGE
+            If (Err and (Current_Error_Number(Error_Object_Id) = DFERR_BAD_MESSAGE)) Begin
+                Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
+            End
+            If (Err) Function_Return (DataFlexErrorText(Self))
+        End
+        
+        Function_Return sResult
+    End_Function
+    
+    //Todo: Remove duplicate code (see ExecuteCall)
+    Function ExecuteCallAndAssign Handle hStatement Returns String
+        String sSymbol sInstance sClass sMethodName sArgument sResult
+        Handle hMethod hInstance
+        Boolean bFound
+        Move (psString(CurrentArrayValue(hStatement))) to sSymbol
+        Get IteratorMoveNext of hStatement to bFound
+        If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+        Move (psString(CurrentArrayValue(hStatement))) to sInstance
+        Integer iIndex
+        Get FindInstanceIndex sInstance to iIndex
+        Handle[] hInstances
+        Get phInstances to hInstances
+        If (iIndex <> -1) Move hInstances[iIndex] to hInstance
+        Get IteratorMoveNext of hStatement to bFound
+        If (not(bFound)) Function_Return (MalformedInstructionText(Self))
+        Move (psString(CurrentArrayValue(hStatement))) to sMethodName
+        If (hInstance = 0) Function_Return (NoInstanceText(Self, sInstance))
+        String[] sInstancesClass
+        Get psInstancesClass to sInstancesClass
+        Move sInstancesClass[iIndex] to sClass
         If (Lowercase(sMethodName) = "table") Begin
             Get IteratorMoveNext of hStatement to bFound
             If (not(bFound)) Function_Return (MalformedInstructionText(Self))
@@ -111,14 +219,16 @@ Class cSlimExecutor is a cObject
             Move False to Err
             Move (Eval("SET_" + Mid(sMethodName, Length(sMethodName) - 3, 4))) to hMethod
             Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
-            If Err Function_Return (NoMethodInClassText(Self, sMethodName))
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
 
             Send Ignore_Error to Error_Object_Id DFERR_BAD_MESSAGE
             Move False to Err
             Set hMethod of hInstance to sArgument
             Send Trap_Error to Error_Object_Id DFERR_BAD_MESSAGE
-            If Err Function_Return (NoMethodInClassText(Self, sMethodName))
-            
+            If (Err and (Current_Error_Number(Error_Object_Id) = DFERR_BAD_MESSAGE)) Begin
+                Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
+            End
+            If (Err) Function_Return (DataFlexErrorText(Self))
             Move "/__VOID__/" to sResult
         End
         Else Begin
@@ -126,26 +236,45 @@ Class cSlimExecutor is a cObject
             Move False to Err
             Move (Eval("GET_" + sMethodName)) to hMethod
             Send Trap_Error to Error_Object_Id DFERR_BAD_SYMBOL_EXPRESSION
-            If Err Function_Return (NoMethodInClassText(Self, sMethodName))
-
+            If Err Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
 
             Send Ignore_Error to Error_Object_Id DFERR_BAD_MESSAGE
             Move False to Err
-            Move 0 to LastErr
             Get hMethod of hInstance to sResult
             Send Trap_Error to Error_Object_Id DFERR_BAD_MESSAGE
-            If (Err and (LastErr = DFERR_BAD_SYMBOL_EXPRESSION)) Begin
-                Function_Return (NoMethodInClassText(Self, sMethodName))
+            If (Err and (Current_Error_Number(Error_Object_Id) = DFERR_BAD_MESSAGE)) Begin
+                Function_Return (NoMethodInClassText(Self, sMethodName, sClass))
             End
+            If (Err) Function_Return (DataFlexErrorText(Self))
         End
-        
+        Send SaveSymbolValue sSymbol sResult
         Function_Return sResult
     End_Function
     
-    //Todo: Implement later
-    Function ExecuteCallAndAssign Handle hStatement Returns String
-        Function_Return "OK"
+    Function SymbolValue String sSymbol Returns String
+        Integer iIndex
+        String sValue
+        String[] sSymbols sSymbolValues
+        Get psSymbols to sSymbols
+        Get psSymbolValues to sSymbolValues
+        Move (SearchArray(sSymbol, sSymbols)) to iIndex
+        If (iIndex = -1) Function_Return "Symbol undefined"
+        Function_Return (sSymbolValues[iIndex])
     End_Function
+    
+    Procedure SaveSymbolValue String sSymbol String sValue
+        String[] sSymbols sSymbolValues
+        Get psSymbols to sSymbols
+        Get psSymbolValues to sSymbolValues
+        Integer iIndex
+        Move ("$" + sSymbol) to sSymbol
+        Move (SearchArray(sSymbol, sSymbols)) to iIndex
+        If (iIndex = -1) Move (SizeOfArray(sSymbols)) to iIndex
+        Move sSymbol to sSymbols[iIndex]
+        Move sValue to sSymbolValues[iIndex]
+        Set psSymbols to sSymbols
+        Set psSymbolValues to sSymbolValues
+    End_Procedure
     
     Function ExecuteInstruction String sInstruction Handle hStatement Returns String
         String sResult

@@ -1,5 +1,5 @@
 Use cSlimList.pkg
-Use cIsNumericType.pkg
+Use cStringMethods.pkg
 // Uses Slim Serialization.  See SlimSerializer for details.  Will deserialize lists of lists recursively.
 
 Class cSlimDeserializer is a cObject
@@ -44,7 +44,7 @@ Class cSlimDeserializer is a cObject
         Move 6 to iLengthSize
         String sLengthString
         Get ReadCharacters iLengthSize to sLengthString
-        If (IsInteger(gcIsNumericType, sLengthString)) Move sLengthString to iLength
+        If (IsInteger(gcStringMethods, sLengthString)) Move sLengthString to iLength
         Else Send SyntaxError ("LengthString" * sLengthString * "not an integer")
         Set piIndex to (piIndex(Self) + iLengthSize)
         Send CheckForColon "Length"

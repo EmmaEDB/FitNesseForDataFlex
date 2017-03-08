@@ -1,5 +1,5 @@
 Use dfallent.pkg
-Use cRichEdit.pkg
+Use cDbRichEdit.pkg
 
 Activate_View Activate_FitNesseRunner for oFitNesseRunnerView
 Object oFitNesseRunnerView is a dbView
