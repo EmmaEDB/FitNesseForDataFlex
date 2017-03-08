@@ -1,0 +1,4 @@
+|Division|
+|numerator|denominator|quotient?|
+|100      |2          |$Val50=  |
+|$Val50   |5          |10       |
